@@ -1,0 +1,7 @@
+# Sample stack Stevedore can pull/restart. Replace image with your own registry image as needed.
+services:
+  whoami:
+    image: traefik/whoami:v1.10.2
+    restart: unless-stopped
+    ports:
+      - "8888:80"

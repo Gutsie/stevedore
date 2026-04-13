@@ -1,0 +1,30 @@
+# Example: run Stevedore beside a stack and trigger redeploys via webhook.
+#
+# Usage:
+#   cd examples
+#   cp ../.env.example .env && edit STEVEDORE_SECRET
+#   docker compose up -d
+#   curl -s http://127.0.0.1:8080/healthz
+#   curl -s -X POST http://127.0.0.1:8080/hook -H "Authorization: Bearer YOUR_SECRET"
+#
+# Security: do not publish port 8080 to the public internet without TLS and network controls.
+# Mounting the Docker socket grants effectively host-root access; treat this stack accordingly.
+
+services:
+  stevedore:
+    build: ..
+    image: stevedore:local
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      STEVEDORE_LISTEN_HOST: "0.0.0.0"
+      STEVEDORE_PORT: "8080"
+      STEVEDORE_COMPOSE_CLI: docker-compose
+      STEVEDORE_COMPOSE_PROJECT_DIR: /project
+      STEVEDORE_COMPOSE_FILES: docker-compose.yml
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./stack:/project:ro
