@@ -1,4 +1,4 @@
-name: Docker build and push (GHCR)
+name: Test and Docker (GHCR)
 
 on:
   push:
@@ -17,7 +17,26 @@ env:
   REGISTRY: ghcr.io
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck
+        run: bun run typecheck
+
+      - name: Test
+        run: bun test
+
   build-push:
+    needs: test
     runs-on: ubuntu-latest
     permissions:
       contents: read

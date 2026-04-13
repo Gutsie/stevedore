@@ -25,6 +25,8 @@ Alternative auth header: `X-Stevedore-Secret: your-long-random-secret`.
 
 ## Docker
 
+The [GitHub Actions workflow](.github/workflows/docker-ghcr.yml) runs **typecheck and tests first**; the image is **only built and pushed to GHCR** if those pass.
+
 Build (uses [BuildKit](https://docs.docker.com/build/buildkit/) so `TARGETARCH` is set for the Compose download):
 
 ```bash
