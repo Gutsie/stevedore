@@ -1,4 +1,5 @@
 import { verifySecret } from "./auth";
+import { readBodyLimited } from "./body-limit";
 import type { StevedoreConfig } from "./config";
 import { resolveDeployShellCommand, runDeploy } from "./deploy";
 
@@ -14,26 +15,9 @@ function jsonResponse(status: number, body: unknown): Response {
 
 let deployLocked = false;
 
-async function readBodyLimited(req: Request, maxBytes: number): Promise<ArrayBuffer | Response> {
-  const cl = req.headers.get("content-length");
-  if (cl !== null) {
-    const n = Number.parseInt(cl, 10);
-    if (Number.isFinite(n) && n > maxBytes) {
-      return jsonResponse(413, {
-        error: "payload_too_large",
-        message: `Body exceeds STEVEDORE_REQUEST_BODY_MAX_BYTES (${maxBytes})`,
-      });
-    }
-  }
-
-  const buf = await req.arrayBuffer();
-  if (buf.byteLength > maxBytes) {
-    return jsonResponse(413, {
-      error: "payload_too_large",
-      message: `Body exceeds STEVEDORE_REQUEST_BODY_MAX_BYTES (${maxBytes})`,
-    });
-  }
-  return buf;
+/** @internal Test hook — resets serialized deploy gate if a test aborts mid-request. */
+export function resetDeployGateForTests(): void {
+  deployLocked = false;
 }
 
 export function createServer(config: StevedoreConfig): ReturnType<typeof Bun.serve> {

@@ -48,11 +48,14 @@ export function loadConfig(): StevedoreConfig {
 
   const deployCommand = optionalEnv("STEVEDORE_DEPLOY_COMMAND");
 
-  const composeCliRaw = optionalEnv("STEVEDORE_COMPOSE_CLI") ?? "docker compose";
-  const composeCli = composeCliRaw.trim();
-  if (composeCli === "") {
+  const composeCliEnv = process.env.STEVEDORE_COMPOSE_CLI;
+  if (composeCliEnv !== undefined && composeCliEnv.trim() === "") {
     throw new Error("STEVEDORE_COMPOSE_CLI cannot be empty");
   }
+  const composeCli =
+    composeCliEnv === undefined || composeCliEnv.trim() === ""
+      ? "docker compose"
+      : composeCliEnv.trim();
 
   const listenHost = optionalEnv("STEVEDORE_LISTEN_HOST") ?? "0.0.0.0";
   const port = parsePositiveInt("STEVEDORE_PORT", process.env.STEVEDORE_PORT, 8080);

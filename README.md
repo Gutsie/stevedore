@@ -90,6 +90,7 @@ curl -s -X POST http://127.0.0.1:8080/hook \
 
 - `bun run dev` — watch mode.
 - `bun run start` — run server.
+- `bun test` — unit and HTTP integration tests (no Docker required).
 - `bun run typecheck` — `tsc --noEmit`.
 
 ## Extending
