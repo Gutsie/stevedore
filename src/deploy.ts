@@ -38,31 +38,37 @@ export async function runDeploy(
     env: { ...process.env },
   });
 
-  let timedOut = false;
-  const timeoutId = setTimeout(() => {
-    timedOut = true;
+  const stdoutPromise = new Response(proc.stdout).text().catch(() => "");
+  const stderrPromise = new Response(proc.stderr).text().catch(() => "");
+
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  const timeoutPromise = new Promise<"timeout">((resolve) => {
+    timeoutId = setTimeout(() => resolve("timeout"), config.deployTimeoutMs);
+  });
+
+  const exitPromise = proc.exited.then((code) => ({ type: "exit" as const, code }));
+  const winner = await Promise.race([exitPromise, timeoutPromise]);
+
+  if (winner === "timeout") {
     try {
       proc.kill("SIGKILL");
     } catch {
       /* ignore */
     }
-  }, config.deployTimeoutMs);
-
-  try {
-    const [stdoutBuf, stderrBuf] = await Promise.all([
-      new Response(proc.stdout).arrayBuffer(),
-      new Response(proc.stderr).arrayBuffer(),
-    ]);
-    const exitCode = await proc.exited;
-    clearTimeout(timeoutId);
     return {
-      exitCode,
-      stdout: new TextDecoder().decode(stdoutBuf),
-      stderr: new TextDecoder().decode(stderrBuf),
-      timedOut,
+      exitCode: null,
+      stdout: "",
+      stderr: "",
+      timedOut: true,
     };
-  } catch (err) {
-    clearTimeout(timeoutId);
-    throw err;
   }
+
+  if (timeoutId !== undefined) clearTimeout(timeoutId);
+  const [stdout, stderr] = await Promise.all([stdoutPromise, stderrPromise]);
+  return {
+    exitCode: winner.code,
+    stdout,
+    stderr,
+    timedOut: false,
+  };
 }
