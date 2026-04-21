@@ -81,7 +81,7 @@ jobs:
 
       - name: Docker metadata (tags and labels)
         id: meta
-        uses: docker/metadata-action@v7
+        uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}
           tags: |
