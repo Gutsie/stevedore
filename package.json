@@ -8,6 +8,7 @@
     "start": "bun run src/index.ts",
     "compile": "bun build --compile src/index.ts --outfile stevedore",
     "smoke": "bash ./scripts/smoke.sh",
+    "smoke:single": "bash ./scripts/smoke-single.sh",
     "test": "bun test",
     "typecheck": "bun x tsc --noEmit"
   },

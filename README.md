@@ -76,7 +76,10 @@ The hook body is accepted for forward compatibility (e.g. future registry-specif
 
 ## Example Compose
 
-See [examples/docker-compose.yml](examples/docker-compose.yml) and [examples/stack/docker-compose.yml](examples/stack/docker-compose.yml).
+You can run Stevedore either way:
+
+- Split files (more realistic multi-project setup): [examples/docker-compose.yml](examples/docker-compose.yml) + [examples/stack/docker-compose.yml](examples/stack/docker-compose.yml)
+- Single file (convenient local/smaller setup): [examples/docker-compose.single.yml](examples/docker-compose.single.yml)
 
 ```bash
 cd examples
@@ -88,10 +91,24 @@ curl -s -X POST http://127.0.0.1:8080/hook \
   -H "Authorization: Bearer $(grep STEVEDORE_SECRET .env | cut -d= -f2-)"
 ```
 
+Single-file variant:
+
+```bash
+cd examples
+cp ../.env.example .env
+# Set STEVEDORE_SECRET in .env
+docker compose -f docker-compose.single.yml up -d --build
+curl -s http://127.0.0.1:8080/healthz
+curl -s -X POST http://127.0.0.1:8080/hook \
+  -H "Authorization: Bearer $(grep STEVEDORE_SECRET .env | cut -d= -f2-)"
+```
+
 ## Scripts
 
 - `bun run dev` — watch mode.
 - `bun run start` — run server.
+- `bun run smoke` — full local smoke run: build example stack, call webhook twice, verify deployed container, then clean up.
+- `bun run smoke:single` — full local smoke run for the single-file compose example, then clean up.
 - `bun test` — unit and HTTP integration tests (no Docker required).
 - `bun run typecheck` — `tsc --noEmit`.
 

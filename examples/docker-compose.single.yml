@@ -1,0 +1,42 @@
+# Single-file example: Stevedore + target service in one compose file.
+# This is convenient for local/smaller deployments.
+#
+# Important:
+# - `STEVEDORE_COMPOSE_PROJECT_DIR` points to this compose project (`/project` mount below).
+# - `STEVEDORE_COMPOSE_FILES` must match this file name.
+# - Keep service names stable so `docker-compose up -d` is idempotent on webhook calls.
+#
+# Usage:
+#   cd examples
+#   cp ../.env.example .env && edit STEVEDORE_SECRET
+#   docker compose -f docker-compose.single.yml up -d --build
+#   curl -s http://127.0.0.1:8080/healthz
+#   curl -s -X POST http://127.0.0.1:8080/hook -H "Authorization: Bearer YOUR_SECRET"
+
+services:
+  stevedore:
+    build: ..
+    image: stevedore:local
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      STEVEDORE_LISTEN_HOST: "0.0.0.0"
+      STEVEDORE_PORT: "8080"
+      STEVEDORE_COMPOSE_CLI: docker-compose
+      STEVEDORE_COMPOSE_PROJECT_DIR: /project
+      STEVEDORE_COMPOSE_FILES: docker-compose.single.yml
+      # In single-file mode, avoid replacing the currently running Stevedore container mid-request.
+      # Redeploy only the target app service by default.
+      STEVEDORE_DEPLOY_COMMAND: docker-compose -p examples -f docker-compose.single.yml pull whoami && docker-compose -p examples -f docker-compose.single.yml up -d whoami
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./:/project:ro
+
+  whoami:
+    image: traefik/whoami:v1.10.2
+    restart: unless-stopped
+    ports:
+      - "8888:80"
