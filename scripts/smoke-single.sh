@@ -24,8 +24,9 @@ fi
 cp "$ROOT_DIR/.env.example" "$ENV_FILE"
 sed -i '' "s/^STEVEDORE_SECRET=.*/STEVEDORE_SECRET=$SECRET/" "$ENV_FILE"
 
-echo "==> Building and starting single-file smoke stack"
-docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" up -d --build
+echo "==> Pulling and starting single-file smoke stack"
+docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" pull
+docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" up -d
 
 echo "==> Waiting for /healthz"
 for _ in {1..30}; do

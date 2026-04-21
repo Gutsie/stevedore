@@ -8,6 +8,9 @@ BACKUP_FILE="$EXAMPLES_DIR/.env.smoke.backup"
 SECRET="smoke-secret-$(date +%s)"
 
 cleanup() {
+  # Tear down target stack that Stevedore deployed (project name/cwd as seen by container: /project).
+  docker compose -p project -f "$EXAMPLES_DIR/stack/docker-compose.yml" down --remove-orphans >/dev/null 2>&1 || true
+  # Tear down the example Stevedore stack.
   docker compose -f "$EXAMPLES_DIR/docker-compose.yml" down --remove-orphans >/dev/null 2>&1 || true
   if [[ -f "$BACKUP_FILE" ]]; then
     mv "$BACKUP_FILE" "$ENV_FILE"
@@ -23,8 +26,9 @@ fi
 cp "$ROOT_DIR/.env.example" "$ENV_FILE"
 sed -i '' "s/^STEVEDORE_SECRET=.*/STEVEDORE_SECRET=$SECRET/" "$ENV_FILE"
 
-echo "==> Building and starting smoke stack"
-docker compose --env-file "$ENV_FILE" -f "$EXAMPLES_DIR/docker-compose.yml" up -d --build
+echo "==> Pulling and starting smoke stack"
+docker compose --env-file "$ENV_FILE" -f "$EXAMPLES_DIR/docker-compose.yml" pull
+docker compose --env-file "$ENV_FILE" -f "$EXAMPLES_DIR/docker-compose.yml" up -d
 
 echo "==> Waiting for /healthz"
 for _ in {1..30}; do

@@ -12,8 +12,7 @@
 
 services:
   stevedore:
-    build: ..
-    image: stevedore:local
+    image: ghcr.io/gutsie/stevedore:latest
     restart: unless-stopped
     ports:
       - "8080:8080"

@@ -81,14 +81,18 @@ You can run Stevedore either way:
 - Split files (more realistic multi-project setup): [examples/docker-compose.yml](examples/docker-compose.yml) + [examples/stack/docker-compose.yml](examples/stack/docker-compose.yml)
 - Single file (convenient local/smaller setup): [examples/docker-compose.single.yml](examples/docker-compose.single.yml)
 
+Both examples use the published image `ghcr.io/gutsie/stevedore:latest` by default.
+
 ```bash
 cd examples
 cp ../.env.example .env
 # Set STEVEDORE_SECRET in .env
-docker compose up -d --build
+docker compose pull
+docker compose up -d
 curl -s http://127.0.0.1:8080/healthz
 curl -s -X POST http://127.0.0.1:8080/hook \
   -H "Authorization: Bearer $(grep STEVEDORE_SECRET .env | cut -d= -f2-)"
+docker compose down --remove-orphans
 ```
 
 Single-file variant:
@@ -97,10 +101,12 @@ Single-file variant:
 cd examples
 cp ../.env.example .env
 # Set STEVEDORE_SECRET in .env
-docker compose -f docker-compose.single.yml up -d --build
+docker compose -f docker-compose.single.yml pull
+docker compose -f docker-compose.single.yml up -d
 curl -s http://127.0.0.1:8080/healthz
 curl -s -X POST http://127.0.0.1:8080/hook \
   -H "Authorization: Bearer $(grep STEVEDORE_SECRET .env | cut -d= -f2-)"
+docker compose -f docker-compose.single.yml down --remove-orphans
 ```
 
 ## Scripts
